@@ -158,9 +158,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 **MD Rabbi** — CS @ Stockton University | AI Engineer
 - GitHub: [@Mrabbi3](https://github.com/Mrabbi3)
-- LinkedIn: [MD Rabbi](https://linkedin.com/in/mdrabbi)
-- Portfolio: [mrabbi3.github.io](https://mrabbi3.github.io/PortfolioV2)
-
----
-
-*Built as a research project exploring agent harness design and evaluation methodologies for AI coding agents.*
