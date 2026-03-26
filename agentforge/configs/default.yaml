@@ -1,0 +1,43 @@
+# AgentForge Default Configuration
+# This config uses summarization memory and all standard tools.
+
+name: default
+
+agent:
+  model: claude-sonnet-4-20250514
+  max_steps: 25
+  temperature: 0.0
+
+memory:
+  strategy: summarization
+  max_context_tokens: 90000
+  compact_threshold: 0.8
+  window_size: 20
+  summary_model: claude-haiku-4-5-20251001
+
+tools:
+  enabled:
+    - bash_execute
+    - file_read
+    - file_write
+    - file_search
+  bash_timeout: 30
+  max_output_chars: 10000
+
+evaluation:
+  metrics:
+    - pass_rate
+    - partial_credit
+    - tool_efficiency
+    - cost_per_task
+    - context_utilization
+    - avg_steps
+    - avg_duration
+    - error_recovery_rate
+  judge:
+    enabled: true
+    model: claude-sonnet-4-20250514
+    dimensions:
+      - reasoning_coherence
+      - plan_adherence
+      - safety

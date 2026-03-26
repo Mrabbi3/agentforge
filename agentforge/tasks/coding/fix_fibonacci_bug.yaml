@@ -1,0 +1,89 @@
+# Sample Task: Fix a bug in a Python function
+# The function should calculate Fibonacci numbers but has an off-by-one error.
+
+name: fix_fibonacci_bug
+description: |
+  The file `fibonacci.py` contains a function `fibonacci(n)` that should return
+  the nth Fibonacci number (0-indexed: fib(0)=0, fib(1)=1, fib(2)=1, fib(3)=2, ...).
+
+  However, the function has a bug — it returns incorrect values for certain inputs.
+
+  Your task:
+  1. Read the file `fibonacci.py`
+  2. Identify the bug
+  3. Fix it
+  4. Run the tests to verify your fix
+
+category: coding
+difficulty: easy
+
+setup_commands:
+  - |
+    cat > fibonacci.py << 'PYEOF'
+    def fibonacci(n):
+        """Return the nth Fibonacci number (0-indexed)."""
+        if n < 0:
+            raise ValueError("n must be non-negative")
+        if n <= 1:
+            return n
+
+        a, b = 0, 1
+        for i in range(2, n):  # BUG: should be range(2, n + 1)
+            a, b = b, a + b
+        return b
+    PYEOF
+  - |
+    cat > test_fibonacci.py << 'PYEOF'
+    from fibonacci import fibonacci
+
+    def test_base_cases():
+        assert fibonacci(0) == 0
+        assert fibonacci(1) == 1
+
+    def test_small_values():
+        assert fibonacci(2) == 1
+        assert fibonacci(3) == 2
+        assert fibonacci(4) == 3
+        assert fibonacci(5) == 5
+
+    def test_larger_values():
+        assert fibonacci(10) == 55
+        assert fibonacci(20) == 6765
+
+    def test_negative():
+        try:
+            fibonacci(-1)
+            assert False, "Should have raised ValueError"
+        except ValueError:
+            pass
+
+    if __name__ == "__main__":
+        test_base_cases()
+        test_small_values()
+        test_larger_values()
+        test_negative()
+        print("All tests passed!")
+    PYEOF
+
+test_commands:
+  - python test_fibonacci.py
+
+gold_patch: |
+  --- a/fibonacci.py
+  +++ b/fibonacci.py
+  @@ -6,6 +6,6 @@
+       if n <= 1:
+           return n
+
+  -    a, b = 0, 1
+  -    for i in range(2, n):
+  +    a, b = 0, 1
+  +    for i in range(2, n + 1):
+           a, b = b, a + b
+       return b
+
+timeout: 120
+tags:
+  - python
+  - debugging
+  - off-by-one
