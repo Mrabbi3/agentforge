@@ -1,0 +1,175 @@
+name: fix_json_parser
+description: >
+  Fix a simple JSON parser that fails to handle escape characters in strings
+  and incorrectly parses nested objects. The string parser does not process
+  backslash escapes, and nested object parsing terminates prematurely.
+category: coding
+difficulty: hard
+timeout: 300
+tags:
+  - python
+  - parsing
+  - json
+
+setup_commands:
+  - |
+    cat > /tmp/json_parser.py << 'PYEOF'
+    from typing import Any, Tuple
+
+
+    class JSONParser:
+        """Simple recursive descent JSON parser."""
+
+        def __init__(self, text: str):
+            self.text = text
+            self.pos = 0
+
+        def parse(self) -> Any:
+            self._skip_whitespace()
+            result = self._parse_value()
+            self._skip_whitespace()
+            return result
+
+        def _skip_whitespace(self) -> None:
+            while self.pos < len(self.text) and self.text[self.pos] in ' \t\n\r':
+                self.pos += 1
+
+        def _parse_value(self) -> Any:
+            if self.pos >= len(self.text):
+                raise ValueError("Unexpected end of input")
+            ch = self.text[self.pos]
+            if ch == '"':
+                return self._parse_string()
+            elif ch == '{':
+                return self._parse_object()
+            elif ch == '[':
+                return self._parse_array()
+            elif ch in '-0123456789':
+                return self._parse_number()
+            elif self.text[self.pos:self.pos + 4] == 'true':
+                self.pos += 4
+                return True
+            elif self.text[self.pos:self.pos + 5] == 'false':
+                self.pos += 5
+                return False
+            elif self.text[self.pos:self.pos + 4] == 'null':
+                self.pos += 4
+                return None
+            raise ValueError(f"Unexpected character: {ch}")
+
+        def _parse_string(self) -> str:
+            self.pos += 1  # skip opening quote
+            result = []
+            while self.pos < len(self.text):
+                ch = self.text[self.pos]
+                if ch == '"':
+                    self.pos += 1
+                    return ''.join(result)
+                result.append(ch)
+                self.pos += 1
+            raise ValueError("Unterminated string")
+
+        def _parse_object(self) -> dict:
+            self.pos += 1  # skip {
+            obj = {}
+            self._skip_whitespace()
+            if self.pos < len(self.text) and self.text[self.pos] == '}':
+                self.pos += 1
+                return obj
+            while True:
+                self._skip_whitespace()
+                key = self._parse_string()
+                self._skip_whitespace()
+                if self.text[self.pos] != ':':
+                    raise ValueError("Expected ':'")
+                self.pos += 1
+                self._skip_whitespace()
+                value = self._parse_value()
+                obj[key] = value
+                self._skip_whitespace()
+                if self.text[self.pos] == '}':
+                    self.pos += 1
+                    break
+                if self.text[self.pos] == ',':
+                    self.pos += 1
+                else:
+                    raise ValueError("Expected ',' or '}'")
+            return obj
+
+        def _parse_array(self) -> list:
+            self.pos += 1  # skip [
+            arr = []
+            self._skip_whitespace()
+            if self.pos < len(self.text) and self.text[self.pos] == ']':
+                self.pos += 1
+                return arr
+            while True:
+                self._skip_whitespace()
+                arr.append(self._parse_value())
+                self._skip_whitespace()
+                if self.text[self.pos] == ']':
+                    self.pos += 1
+                    break
+                if self.text[self.pos] == ',':
+                    self.pos += 1
+                else:
+                    raise ValueError("Expected ',' or ']'")
+            return arr
+
+        def _parse_number(self) -> Any:
+            start = self.pos
+            if self.text[self.pos] == '-':
+                self.pos += 1
+            while self.pos < len(self.text) and self.text[self.pos].isdigit():
+                self.pos += 1
+            if self.pos < len(self.text) and self.text[self.pos] == '.':
+                self.pos += 1
+                while self.pos < len(self.text) and self.text[self.pos].isdigit():
+                    self.pos += 1
+                return float(self.text[start:self.pos])
+            return int(self.text[start:self.pos])
+
+
+    def parse_json(text: str) -> Any:
+        return JSONParser(text).parse()
+    PYEOF
+
+test_commands:
+  - |
+    python3 -c "
+    import sys
+    sys.path.insert(0, '/tmp')
+    from json_parser import parse_json
+    assert parse_json('42') == 42
+    assert parse_json('\"hello\"') == 'hello'
+    r = parse_json('{\"a\": 1, \"b\": 2}')
+    assert r == {'a': 1, 'b': 2}, f'simple obj: {r}'
+    esc = parse_json('\"hello\\\\nworld\"')
+    assert esc == 'hello\nworld', f'escape: {repr(esc)}'
+    nested = parse_json('{\"a\": {\"b\": {\"c\": 1}}}')
+    assert nested == {'a': {'b': {'c': 1}}}, f'nested: {nested}'
+    mixed = parse_json('{\"arr\": [1, {\"x\": true}], \"s\": \"val\"}')
+    assert mixed == {'arr': [1, {'x': True}], 's': 'val'}, f'mixed: {mixed}'
+    print('ALL TESTS PASSED')
+    "
+
+gold_patch: |
+  --- a/json_parser.py
+  +++ b/json_parser.py
+  @@ -53,6 +53,17 @@
+               ch = self.text[self.pos]
+               if ch == '"':
+                   self.pos += 1
+                   return ''.join(result)
+  +            if ch == '\\':
+  +                self.pos += 1
+  +                esc = self.text[self.pos]
+  +                escape_map = {
+  +                    'n': '\n', 't': '\t', 'r': '\r',
+  +                    '"': '"', '\\': '\\'
+  +                }
+  +                result.append(escape_map.get(esc, esc))
+  +                self.pos += 1
+  +                continue
+               result.append(ch)
+               self.pos += 1

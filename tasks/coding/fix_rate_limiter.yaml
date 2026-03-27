@@ -1,0 +1,78 @@
+name: fix_rate_limiter
+description: >
+  Fix a token bucket rate limiter where the refill logic is broken. The
+  refill method calculates elapsed time but fails to add tokens correctly,
+  causing the bucket to never refill after initial depletion.
+category: coding
+difficulty: medium
+timeout: 180
+tags:
+  - python
+  - rate-limiting
+  - concurrency
+
+setup_commands:
+  - |
+    cat > /tmp/rate_limiter.py << 'PYEOF'
+    import time
+
+
+    class TokenBucketRateLimiter:
+        """Token bucket rate limiter."""
+
+        def __init__(self, capacity: int, refill_rate: float):
+            self.capacity = capacity
+            self.refill_rate = refill_rate
+            self.tokens = float(capacity)
+            self.last_refill = time.monotonic()
+
+        def _refill(self) -> None:
+            now = time.monotonic()
+            elapsed = now - self.last_refill
+            new_tokens = elapsed * self.refill_rate
+            self.tokens = min(self.capacity, new_tokens)
+            self.last_refill = now
+
+        def allow(self) -> bool:
+            self._refill()
+            if self.tokens >= 1.0:
+                self.tokens -= 1.0
+                return True
+            return False
+
+        def tokens_available(self) -> float:
+            self._refill()
+            return self.tokens
+    PYEOF
+
+test_commands:
+  - |
+    python3 -c "
+    import sys, time
+    sys.path.insert(0, '/tmp')
+    from rate_limiter import TokenBucketRateLimiter
+    rl = TokenBucketRateLimiter(capacity=5, refill_rate=10.0)
+    for _ in range(5):
+        assert rl.allow(), 'should allow first 5'
+    assert not rl.allow(), 'should deny 6th'
+    time.sleep(0.3)
+    assert rl.allow(), 'should allow after refill'
+    rl2 = TokenBucketRateLimiter(capacity=2, refill_rate=100.0)
+    rl2.allow()
+    rl2.allow()
+    time.sleep(0.1)
+    avail = rl2.tokens_available()
+    assert avail >= 1.5, f'expected refill, got {avail}'
+    print('ALL TESTS PASSED')
+    "
+
+gold_patch: |
+  --- a/rate_limiter.py
+  +++ b/rate_limiter.py
+  @@ -16,7 +16,7 @@
+           now = time.monotonic()
+           elapsed = now - self.last_refill
+           new_tokens = elapsed * self.refill_rate
+  -        self.tokens = min(self.capacity, new_tokens)
+  +        self.tokens = min(self.capacity, self.tokens + new_tokens)
+           self.last_refill = now

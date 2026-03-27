@@ -1,0 +1,53 @@
+name: fix_fibonacci_bug
+description: >
+  Fix an off-by-one error in a Fibonacci function. The function currently
+  returns fib(n-1) instead of fib(n) due to an incorrect loop bound.
+category: coding
+difficulty: easy
+timeout: 120
+tags:
+  - python
+  - recursion
+  - off-by-one
+
+setup_commands:
+  - |
+    cat > /tmp/fibonacci.py << 'PYEOF'
+    def fibonacci(n: int) -> int:
+        """Return the nth Fibonacci number (0-indexed)."""
+        if n < 0:
+            raise ValueError("n must be non-negative")
+        if n <= 1:
+            return n
+        a, b = 0, 1
+        for _ in range(n - 1):
+            a, b = b, a + b
+        return a
+    PYEOF
+
+test_commands:
+  - |
+    python3 -c "
+    import sys
+    sys.path.insert(0, '/tmp')
+    from fibonacci import fibonacci
+    assert fibonacci(0) == 0, f'fib(0)={fibonacci(0)}'
+    assert fibonacci(1) == 1, f'fib(1)={fibonacci(1)}'
+    assert fibonacci(2) == 1, f'fib(2)={fibonacci(2)}'
+    assert fibonacci(5) == 5, f'fib(5)={fibonacci(5)}'
+    assert fibonacci(10) == 55, f'fib(10)={fibonacci(10)}'
+    print('ALL TESTS PASSED')
+    "
+
+gold_patch: |
+  --- a/fibonacci.py
+  +++ b/fibonacci.py
+  @@ -6,6 +6,6 @@
+       if n <= 1:
+           return n
+       a, b = 0, 1
+  -    for _ in range(n - 1):
+  +    for _ in range(n):
+           a, b = b, a + b
+  -    return a
+  +    return b

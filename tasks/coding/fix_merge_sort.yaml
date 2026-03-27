@@ -1,0 +1,66 @@
+name: fix_merge_sort
+description: >
+  Fix a merge sort implementation that drops elements from the right subarray
+  during the merge step. The merge function fails to append remaining right
+  elements after the main comparison loop.
+category: coding
+difficulty: medium
+timeout: 180
+tags:
+  - python
+  - sorting
+  - divide-and-conquer
+
+setup_commands:
+  - |
+    cat > /tmp/merge_sort.py << 'PYEOF'
+    from typing import List
+
+
+    def merge_sort(arr: List[int]) -> List[int]:
+        """Sort a list of integers using merge sort."""
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        left = merge_sort(arr[:mid])
+        right = merge_sort(arr[mid:])
+        return merge(left, right)
+
+
+    def merge(left: List[int], right: List[int]) -> List[int]:
+        """Merge two sorted lists into one sorted list."""
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                result.append(left[i])
+                i += 1
+            else:
+                result.append(right[j])
+                j += 1
+        result.extend(left[i:])
+        return result
+    PYEOF
+
+test_commands:
+  - |
+    python3 -c "
+    import sys
+    sys.path.insert(0, '/tmp')
+    from merge_sort import merge_sort
+    assert merge_sort([]) == [], 'empty'
+    assert merge_sort([1]) == [1], 'single'
+    assert merge_sort([3, 1, 2]) == [1, 2, 3], 'basic'
+    assert merge_sort([5, 3, 8, 1, 2]) == [1, 2, 3, 5, 8], 'medium'
+    assert merge_sort([1, 1, 1]) == [1, 1, 1], 'dupes'
+    print('ALL TESTS PASSED')
+    "
+
+gold_patch: |
+  --- a/merge_sort.py
+  +++ b/merge_sort.py
+  @@ -23,3 +23,4 @@
+               j += 1
+       result.extend(left[i:])
+  +    result.extend(right[j:])
+       return result

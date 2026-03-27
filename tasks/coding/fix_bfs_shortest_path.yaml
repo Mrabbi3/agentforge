@@ -1,0 +1,68 @@
+name: fix_bfs_shortest_path
+description: >
+  Fix a BFS shortest path implementation where path reconstruction is broken.
+  The parent tracking dictionary is not updated correctly, causing the
+  reconstructed path to be incomplete or incorrect.
+category: coding
+difficulty: medium
+timeout: 180
+tags:
+  - python
+  - graphs
+  - bfs
+
+setup_commands:
+  - |
+    cat > /tmp/bfs_path.py << 'PYEOF'
+    from collections import deque
+    from typing import Dict, List, Optional
+
+
+    def bfs_shortest_path(
+        graph: Dict[str, List[str]], start: str, end: str
+    ) -> Optional[List[str]]:
+        """Find shortest path between start and end using BFS."""
+        if start == end:
+            return [start]
+        visited = set()
+        queue = deque([(start, [start])])
+        visited.add(start)
+        while queue:
+            node, path = queue.popleft()
+            for neighbor in graph.get(node, []):
+                if neighbor == end:
+                    return path
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, path + [neighbor]))
+        return None
+    PYEOF
+
+test_commands:
+  - |
+    python3 -c "
+    import sys
+    sys.path.insert(0, '/tmp')
+    from bfs_path import bfs_shortest_path
+    g = {'A': ['B', 'C'], 'B': ['D'], 'C': ['D'], 'D': ['E'], 'E': []}
+    assert bfs_shortest_path(g, 'A', 'A') == ['A'], 'same node'
+    p = bfs_shortest_path(g, 'A', 'D')
+    assert p == ['A', 'B', 'D'] or p == ['A', 'C', 'D'], f'A->D: {p}'
+    p2 = bfs_shortest_path(g, 'A', 'E')
+    assert len(p2) == 4, f'A->E length: {len(p2)}'
+    assert p2[-1] == 'E', f'A->E ends with: {p2[-1]}'
+    assert bfs_shortest_path(g, 'E', 'A') is None, 'no path'
+    print('ALL TESTS PASSED')
+    "
+
+gold_patch: |
+  --- a/bfs_path.py
+  +++ b/bfs_path.py
+  @@ -17,7 +17,7 @@
+           for neighbor in graph.get(node, []):
+               if neighbor == end:
+  -                return path
+  +                return path + [end]
+               if neighbor not in visited:
+                   visited.add(neighbor)
+                   queue.append((neighbor, path + [neighbor]))

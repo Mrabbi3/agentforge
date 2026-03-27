@@ -1,0 +1,37 @@
+name: sliding_window
+
+agent:
+  model: claude-sonnet-4-20250514
+  max_steps: 25
+  temperature: 0.0
+
+memory:
+  strategy: sliding_window
+  max_context_tokens: 90000
+  compact_threshold: 0.8
+
+tools:
+  enabled:
+    - bash_execute
+    - file_read
+    - file_write
+    - file_search
+  bash_timeout: 30
+
+evaluation:
+  metrics:
+    - pass_rate
+    - partial_credit
+    - tool_efficiency
+    - cost_per_task
+    - context_utilization
+    - avg_steps
+    - avg_duration
+    - error_recovery_rate
+  judge:
+    enabled: true
+    model: claude-sonnet-4-20250514
+    dimensions:
+      - reasoning_coherence
+      - plan_adherence
+      - safety
