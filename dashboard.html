@@ -1,794 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentForge Dashboard</title>
+<title>AgentForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --border: #2a2d3a;
-    --text: #e4e4e7;
-    --muted: #8b8d97;
-    --accent: #6366f1;
-    --accent2: #8b5cf6;
-    --green: #22c55e;
-    --amber: #f59e0b;
-    --red: #ef4444;
-    --cyan: #06b6d4;
-    --pink: #ec4899;
-  }
+/* ── Theme tokens ── */
+[data-theme="dark"] {
+  --bg:        #111113;
+  --bg-raised: #19191c;
+  --bg-inset:  #0e0e10;
+  --border:    #27272a;
+  --border-sub:#1f1f22;
+  --text-1:    #ececef;
+  --text-2:    #a1a1a9;
+  --text-3:    #63636e;
+  --accent:    #635bff;
+  --accent-soft:rgba(99,91,255,.1);
+  --accent-text:#a5a0ff;
+  --green:     #30a46c;
+  --green-soft:rgba(48,164,108,.12);
+  --red:       #e5484d;
+  --red-soft:  rgba(229,72,77,.1);
+  --amber:     #f5a623;
+  --cyan:      #12a594;
+  --chart-1:   #635bff;
+  --chart-2:   #12a594;
+  --chart-3:   #f5a623;
+  --chart-4:   #e5484d;
+  --chart-5:   #a78bfa;
+  --chart-6:   #30a46c;
+  --shadow:    0 1px 2px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.35);
+  --code-bg:   #0e0e10;
+  --toggle-bg: #27272a;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+[data-theme="light"] {
+  --bg:        #ffffff;
+  --bg-raised: #f8f8f9;
+  --bg-inset:  #f1f1f3;
+  --border:    #e4e4e7;
+  --border-sub:#ededf0;
+  --text-1:    #18181b;
+  --text-2:    #6b6b76;
+  --text-3:    #9e9ea7;
+  --accent:    #635bff;
+  --accent-soft:rgba(99,91,255,.08);
+  --accent-text:#4f46e5;
+  --green:     #2e7d57;
+  --green-soft:rgba(46,125,87,.08);
+  --red:       #dc2626;
+  --red-soft:  rgba(220,38,38,.07);
+  --amber:     #d97706;
+  --cyan:      #0e8a7d;
+  --chart-1:   #635bff;
+  --chart-2:   #0e8a7d;
+  --chart-3:   #d97706;
+  --chart-4:   #dc2626;
+  --chart-5:   #7c3aed;
+  --chart-6:   #2e7d57;
+  --shadow:    0 1px 3px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
+  --code-bg:   #f4f4f5;
+  --toggle-bg: #e4e4e7;
+}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px;
-  }
+/* ── Reset ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text-1);line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+a{color:var(--accent-text);text-decoration:none}
+a:hover{text-decoration:underline}
+input[type="file"]{display:none}
 
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 
-  .header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* ── Nav ── */
+header{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:background .25s}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;color:var(--text-1)}
+.logo svg{width:22px;height:22px}
+.nav-r{display:flex;align-items:center;gap:6px}
+.nav-link{font-size:13px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}
+.nav-link:hover{color:var(--text-1);background:var(--bg-raised);text-decoration:none}
 
-  .header .subtitle {
-    color: var(--muted);
-    font-size: 14px;
-    margin-top: 4px;
-  }
+/* Theme toggle */
+.theme-toggle{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg-raised);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:var(--text-2);transition:all .2s;flex-shrink:0;
+}
+.theme-toggle:hover{color:var(--text-1);border-color:var(--text-3)}
+.theme-toggle svg{width:16px;height:16px}
+[data-theme="dark"] .icon-sun{display:none}
+[data-theme="light"] .icon-moon{display:none}
 
-  .header .badge {
-    background: rgba(34, 197, 94, 0.15);
-    color: var(--green);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-  }
+.gh-link{
+  font-size:13px;font-weight:600;color:var(--bg);background:var(--text-1);
+  padding:6px 14px;border-radius:6px;transition:opacity .15s;display:flex;align-items:center;gap:5px;
+}
+.gh-link:hover{opacity:.85;text-decoration:none}
 
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
-    margin-bottom: 32px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-  }
+/* ── Hero ── */
+.hero{padding:80px 0 64px;max-width:620px}
+.hero .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent-text);background:var(--accent-soft);padding:4px 10px;border-radius:100px;margin-bottom:20px}
+.hero h1{font-size:clamp(30px,5vw,44px);font-weight:700;line-height:1.15;letter-spacing:-.5px;margin-bottom:14px;color:var(--text-1)}
+.hero p{font-size:16px;color:var(--text-2);line-height:1.7;margin-bottom:28px;max-width:520px}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap}
 
-  .upload-zone:hover {
-    border-color: var(--accent);
-    background: rgba(99, 102, 241, 0.05);
-  }
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-fill{background:var(--accent);color:#fff}
+.btn-fill:hover{filter:brightness(1.1);transform:translateY(-1px);text-decoration:none;color:#fff}
+.btn-outline{background:transparent;color:var(--text-1);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--text-3);text-decoration:none}
 
-  .upload-zone.hidden { display: none; }
+/* Terminal */
+.term{margin-top:40px;background:var(--bg-inset);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9}
+.term-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.term-dot{width:10px;height:10px;border-radius:50%;background:var(--border)}
+.term-body{padding:14px 16px;color:var(--text-2);overflow-x:auto}
+.term-body .g{color:var(--green)}.term-body .c{color:var(--text-3)}.term-body .a{color:var(--accent-text)}.term-body .n{color:var(--cyan)}
 
-  .upload-zone p { color: var(--muted); font-size: 15px; }
-  .upload-zone .icon { font-size: 36px; margin-bottom: 12px; }
+/* ── Numbers row ── */
+.numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:80px}
+.num-item{background:var(--bg);padding:24px;text-align:center}
+.num-item h3{font-size:28px;font-weight:700;letter-spacing:-.5px;color:var(--text-1)}
+.num-item p{font-size:12px;color:var(--text-3);margin-top:2px;font-weight:500}
 
-  .dashboard.hidden { display: none; }
+/* ── Sections ── */
+.section{padding:80px 0}
+.section + .section{border-top:1px solid var(--border)}
+.section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--accent-text);margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.section-desc{font-size:14px;color:var(--text-2);max-width:440px;line-height:1.7;margin-bottom:40px}
 
-  /* Metric cards */
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
-  }
+/* Feature grid */
+.f-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.f-card{background:var(--bg);padding:28px 24px;transition:background .15s}
+.f-card:hover{background:var(--bg-raised)}
+.f-card h3{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.f-card p{font-size:13px;color:var(--text-2);line-height:1.6}
+.f-card .ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ico-p{background:var(--accent-soft);color:var(--accent-text)}
+.ico-g{background:var(--green-soft);color:var(--green)}
+.ico-c{background:rgba(18,165,148,.1);color:var(--cyan)}
+.ico-a{background:rgba(245,166,35,.1);color:var(--amber)}
+.ico-r{background:var(--red-soft);color:var(--red)}
 
-  .metric-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-  }
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.step-box{position:relative}
+.step-box .sn{font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.step-box h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.step-box p{font-size:12.5px;color:var(--text-3);line-height:1.55}
 
-  .metric-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-  }
+/* ── Dashboard ── */
+.upload-zone{
+  border:1px dashed var(--border);border-radius:10px;padding:40px;text-align:center;
+  cursor:pointer;transition:border-color .2s,background .2s;background:var(--bg-raised)
+}
+.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}
+.upload-zone.hidden{display:none}
+.upload-zone p{font-size:13px;color:var(--text-2)}
+.upload-zone .sm{font-size:11px;color:var(--text-3);margin-top:4px}
 
-  .metric-card.green::before { background: var(--green); }
-  .metric-card.amber::before { background: var(--amber); }
-  .metric-card.cyan::before { background: var(--cyan); }
-  .metric-card.pink::before { background: var(--pink); }
+.dash.hidden{display:none}
 
-  .metric-label {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
+/* Metric cards */
+.m-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:24px}
+.m-card{background:var(--bg-raised);border:1px solid var(--border);border-radius:8px;padding:16px;transition:background .15s}
+.m-card:hover{background:var(--bg-inset)}
+.m-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);font-weight:600;margin-bottom:6px}
+.m-val{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.m-unit{font-size:12px;color:var(--text-3);font-weight:500;margin-left:1px}
 
-  .metric-value {
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1;
-  }
+/* Charts */
+.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.ch-card{background:var(--bg-raised);border:1px solid var(--border);border-radius:8px;padding:18px}
+.ch-card h4{font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px}
+.ch-wrap{position:relative;height:240px}
 
-  .metric-unit {
-    font-size: 14px;
-    color: var(--muted);
-    font-weight: 400;
-    margin-left: 4px;
-  }
+/* Table */
+.t-card{background:var(--bg-raised);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:24px;overflow-x:auto}
+.t-card h4{font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-3);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+td{padding:8px 12px;border-bottom:1px solid var(--border-sub)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--accent-soft)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600}
+.badge-g{background:var(--green-soft);color:var(--green)}
+.badge-r{background:var(--red-soft);color:var(--red)}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.tok-bar{display:flex;align-items:center;gap:6px}
+.tok-fill{height:3px;border-radius:2px;background:var(--accent);min-width:2px}
+.tok-num{font-size:11px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 
-  /* Charts section */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 32px;
-  }
+/* Timeline */
+.tl-card{background:var(--bg-raised);border:1px solid var(--border);border-radius:8px;padding:18px}
+.tl-card h4{font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px}
+.tl-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.tl-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-3);cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;transition:all .15s}
+.tl-btn:hover{border-color:var(--text-3);color:var(--text-2)}
+.tl-btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.tl-list{list-style:none}
+.tl-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-sub)}
+.tl-item:last-child{border-bottom:none}
+.tl-n{width:24px;height:24px;border-radius:6px;background:var(--accent-soft);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.tl-body{flex:1;min-width:0}
+.tl-meta{font-size:11px;color:var(--text-3)}
+.tl-meta strong{color:var(--text-2)}
+.tl-tools{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.tl-chip{font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(18,165,148,.08);color:var(--cyan);font-family:'JetBrains Mono',monospace}
+.tl-reason{font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5;display:none;white-space:pre-wrap;max-height:160px;overflow-y:auto;background:var(--code-bg);padding:10px;border-radius:6px;border:1px solid var(--border)}
+.tl-reason.open{display:block}
+.tl-exp{font-size:10.5px;color:var(--text-3);margin-top:3px;cursor:pointer}
+.tl-exp em{color:var(--accent-text);font-style:normal}
 
-  @media (max-width: 900px) {
-    .charts-grid { grid-template-columns: 1fr; }
-  }
+/* ── CTA ── */
+.cta{padding:80px 0;text-align:center}
+.cta h2{font-size:24px;font-weight:700;margin-bottom:8px}
+.cta p{color:var(--text-2);font-size:14px;margin-bottom:24px}
+.cta-code{
+  display:inline-block;background:var(--code-bg);border:1px solid var(--border);
+  border-radius:6px;padding:10px 20px;font-family:'JetBrains Mono',monospace;
+  font-size:13px;color:var(--green);margin-top:12px;user-select:all;
+}
 
-  .chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
+/* ── Footer ── */
+footer{padding:32px 0;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text-3)}
 
-  .chart-card h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: var(--text);
-  }
-
-  .chart-container {
-    position: relative;
-    height: 280px;
-  }
-
-  /* Results table */
-  .table-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-    overflow-x: auto;
-  }
-
-  .table-card h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-
-  th {
-    text-align: left;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  td {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(42, 45, 58, 0.5);
-  }
-
-  tr:last-child td { border-bottom: none; }
-
-  tr:hover td { background: rgba(99, 102, 241, 0.04); }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .status-badge.success {
-    background: rgba(34, 197, 94, 0.12);
-    color: var(--green);
-  }
-
-  .status-badge.failed {
-    background: rgba(239, 68, 68, 0.12);
-    color: var(--red);
-  }
-
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  .token-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .token-bar-fill {
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    min-width: 4px;
-  }
-
-  .token-bar-label {
-    font-size: 12px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  /* Timeline */
-  .timeline-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-
-  .timeline-card h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-
-  .step-list {
-    list-style: none;
-  }
-
-  .step-item {
-    display: flex;
-    gap: 16px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(42, 45, 58, 0.4);
-    cursor: pointer;
-    transition: background 0.15s;
-    padding-left: 8px;
-    border-radius: 6px;
-  }
-
-  .step-item:hover { background: rgba(99, 102, 241, 0.06); }
-  .step-item:last-child { border-bottom: none; }
-
-  .step-num {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .step-content { flex: 1; min-width: 0; }
-
-  .step-tools {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-  }
-
-  .tool-chip {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(6, 182, 212, 0.12);
-    color: var(--cyan);
-  }
-
-  .step-reasoning {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 8px;
-    line-height: 1.5;
-    display: none;
-    white-space: pre-wrap;
-    max-height: 200px;
-    overflow-y: auto;
-    background: rgba(0,0,0,0.2);
-    padding: 12px;
-    border-radius: 6px;
-  }
-
-  .step-reasoning.open { display: block; }
-
-  .step-meta {
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  /* Task selector */
-  .task-selector {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-
-  .task-btn {
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-
-  .task-btn:hover { border-color: var(--accent); color: var(--text); }
-  .task-btn.active {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .footer {
-    text-align: center;
-    padding: 24px;
-    color: var(--muted);
-    font-size: 13px;
-    border-top: 1px solid var(--border);
-  }
-
-  input[type="file"] { display: none; }
+/* ── Responsive ── */
+@media(max-width:768px){
+  .f-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .ch-grid{grid-template-columns:1fr}
+  .numbers{grid-template-columns:1fr 1fr}
+  .nav-link{display:none}
+  .hero{padding:48px 0 40px}
+}
+@media(max-width:480px){
+  .steps{grid-template-columns:1fr}
+  .numbers{grid-template-columns:1fr 1fr}
+  .hero-btns{flex-direction:column}
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1>AgentForge Dashboard</h1>
-    <div class="subtitle">AI Agent Benchmark Results</div>
-  </div>
-  <div id="headerBadge"></div>
-</div>
-
-<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-  <div class="icon">&#128202;</div>
-  <p>Drop your <strong>results JSON</strong> here or click to browse</p>
-  <p style="margin-top:8px;font-size:13px;">Generated by: agentforge benchmark --config ...</p>
-  <input type="file" id="fileInput" accept=".json" />
-</div>
-
-<div class="dashboard hidden" id="dashboard">
-
-  <div class="metrics-grid" id="metricsGrid"></div>
-
-  <div class="charts-grid">
-    <div class="chart-card">
-      <h3>Steps per Task</h3>
-      <div class="chart-container"><canvas id="stepsChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Token Usage per Task</h3>
-      <div class="chart-container"><canvas id="tokensChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Metrics Overview</h3>
-      <div class="chart-container"><canvas id="radarChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Input vs Output Tokens</h3>
-      <div class="chart-container"><canvas id="scatterChart"></canvas></div>
+<header>
+  <div class="wrap">
+    <a href="#" class="logo" style="text-decoration:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      AgentForge
+    </a>
+    <div class="nav-r">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#dashboard" class="nav-link">Dashboard</a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a href="https://github.com/Mrabbi3/agentforge" class="gh-link" style="text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
     </div>
   </div>
+</header>
 
-  <div class="table-card">
-    <h3>Task Results</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Task ID</th>
-          <th>Status</th>
-          <th>Tests</th>
-          <th>Steps</th>
-          <th>Input Tokens</th>
-          <th>Output Tokens</th>
-        </tr>
-      </thead>
-      <tbody id="resultsTable"></tbody>
-    </table>
+<!-- Hero -->
+<section class="hero wrap">
+  <span class="tag">Open Source &middot; v0.1.0</span>
+  <h1>A testing harness for AI coding agents.</h1>
+  <p>Evaluate, benchmark, and compare how well AI agents fix bugs. Pluggable memory strategies, 8 built-in metrics, and CI integration out of the box.</p>
+  <div class="hero-btns">
+    <a href="#dashboard" class="btn btn-fill" style="text-decoration:none">View Dashboard</a>
+    <a href="https://github.com/Mrabbi3/agentforge" class="btn btn-outline" style="text-decoration:none">Read the docs</a>
   </div>
 
-  <div class="timeline-card">
-    <h3>Agent Trajectory</h3>
-    <div class="task-selector" id="taskSelector"></div>
-    <ul class="step-list" id="stepList"></ul>
+  <div class="term">
+    <div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span></div>
+    <div class="term-body">
+<span class="c">$</span> agentforge benchmark <span class="a">--config</span> default.yaml
+<span class="c">Running 6 tasks...</span>
+Fix Fibonacci Bug ........... <span class="g">PASS</span> <span class="n">7 steps</span>
+Fix Merge Sort .............. <span class="g">PASS</span> <span class="n">6 steps</span>
+Fix BFS Shortest Path ....... <span class="g">PASS</span> <span class="n">8 steps</span>
+Fix Rate Limiter ............ <span class="g">PASS</span> <span class="n">4 steps</span>
+Fix LRU Cache ............... <span class="g">PASS</span> <span class="n">5 steps</span>
+Fix JSON Parser ............. <span class="g">PASS</span> <span class="n">5 steps</span>
+
+<span class="g">6/6 passed</span> &middot; 100% &middot; $0.07/task &middot; 30s avg
+    </div>
+  </div>
+</section>
+
+<!-- Numbers -->
+<div class="wrap">
+  <div class="numbers">
+    <div class="num-item"><h3>100%</h3><p>Pass rate</p></div>
+    <div class="num-item"><h3>5.8</h3><p>Avg steps</p></div>
+    <div class="num-item"><h3>$0.07</h3><p>Per task</p></div>
+    <div class="num-item"><h3>30s</h3><p>Avg duration</p></div>
   </div>
 </div>
 
-<div class="footer">AgentForge v0.1.0 &mdash; AI Agent Harness with Pluggable Memory &amp; Evaluation</div>
+<!-- Features -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-label">Features</div>
+    <div class="section-title">What's included</div>
+    <p class="section-desc">Everything you need to evaluate AI agents on real coding tasks, from the loop to the metrics.</p>
+    <div class="f-grid">
+      <div class="f-card">
+        <h3><span class="ico ico-p">&#8635;</span> Agent Loop</h3>
+        <p>Plan, Act, Observe, Reflect. Automatic tool dispatch with configurable step limits and early stopping.</p>
+      </div>
+      <div class="f-card">
+        <h3><span class="ico ico-c">&#9776;</span> 8 Metrics</h3>
+        <p>Pass rate, tool efficiency, cost tracking, context utilization, error recovery, steps, and duration.</p>
+      </div>
+      <div class="f-card">
+        <h3><span class="ico ico-g">&#9645;</span> 4 Memory Strategies</h3>
+        <p>Sliding window, summarization, RAG, and hybrid. Switch with one config line.</p>
+      </div>
+      <div class="f-card">
+        <h3><span class="ico ico-a">&#9881;</span> Tool Execution</h3>
+        <p>Bash, file read/write, search. Sandboxed with timeouts and error capture.</p>
+      </div>
+      <div class="f-card">
+        <h3><span class="ico ico-p">&#9640;</span> Multi-Agent</h3>
+        <p>Planner, Executor, Reviewer. Orchestrated revision loops with role-based coordination.</p>
+      </div>
+      <div class="f-card">
+        <h3><span class="ico ico-r">&#9656;</span> CI Integration</h3>
+        <p>GitHub Actions workflow. Auto-diagnoses failing PRs and posts agent results as comments.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-label">How it works</div>
+    <div class="section-title">Four steps, zero intervention</div>
+    <p class="section-desc">Define a task, let the agent work, get scored results.</p>
+    <div class="steps">
+      <div class="step-box"><div class="sn">01</div><h3>Define</h3><p>Write a YAML task with the bug description and test commands.</p></div>
+      <div class="step-box"><div class="sn">02</div><h3>Plan</h3><p>Agent reads the code, identifies the issue, and builds an action plan.</p></div>
+      <div class="step-box"><div class="sn">03</div><h3>Execute</h3><p>Uses tools to read, write, and test files autonomously.</p></div>
+      <div class="step-box"><div class="sn">04</div><h3>Evaluate</h3><p>Metrics computed, results logged, performance benchmarked.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Dashboard -->
+<section class="section" id="dashboard">
+  <div class="wrap">
+    <div class="section-label">Dashboard</div>
+    <div class="section-title">Explore benchmark results</div>
+    <p class="section-desc">Drop a results JSON to visualize performance, metrics, and agent trajectories.</p>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <p>Drop <strong>results JSON</strong> here or click to browse</p>
+      <p class="sm">Produced by agentforge benchmark --config ...</p>
+      <input type="file" id="fileInput" accept=".json"/>
+    </div>
+
+    <div class="dash hidden" id="dash">
+      <div class="m-grid" id="mGrid"></div>
+      <div class="ch-grid">
+        <div class="ch-card"><h4>Steps per task</h4><div class="ch-wrap"><canvas id="cSteps"></canvas></div></div>
+        <div class="ch-card"><h4>Token usage</h4><div class="ch-wrap"><canvas id="cTokens"></canvas></div></div>
+        <div class="ch-card"><h4>Metrics overview</h4><div class="ch-wrap"><canvas id="cRadar"></canvas></div></div>
+        <div class="ch-card"><h4>Input vs output</h4><div class="ch-wrap"><canvas id="cScatter"></canvas></div></div>
+      </div>
+      <div class="t-card"><h4>Results</h4><table><thead><tr><th>Task</th><th>Status</th><th>Tests</th><th>Steps</th><th>Input</th><th>Output</th></tr></thead><tbody id="tBody"></tbody></table></div>
+      <div class="tl-card"><h4>Trajectory</h4><div class="tl-sel" id="tlSel"></div><ul class="tl-list" id="tlList"></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Get started in two minutes.</h2>
+    <p>Clone, install, benchmark. That's it.</p>
+    <a href="https://github.com/Mrabbi3/agentforge" class="btn btn-fill" style="text-decoration:none">View on GitHub</a>
+    <div class="cta-code">pip install -e ".[dev]" && agentforge benchmark</div>
+  </div>
+</section>
+
+<footer><div class="wrap"><p>Built by <a href="https://github.com/Mrabbi3">MD Rabbi</a> &middot; MIT License</p></div></footer>
 
 <script>
-const chartInstances = {};
+/* ── Theme ── */
+function toggleTheme(){
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+  updateChartColors();
+}
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  else if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.setAttribute('data-theme', 'light');
+})();
 
-// Color palette
-const COLORS = {
-  accent: '#6366f1',
-  accent2: '#8b5cf6',
-  green: '#22c55e',
-  amber: '#f59e0b',
-  cyan: '#06b6d4',
-  pink: '#ec4899',
-  red: '#ef4444',
-  muted: '#8b8d97',
+/* ── Charts ── */
+const CI = {};
+function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() }
+function setupChartDefaults(){
+  Chart.defaults.color = getCSS('--text-3');
+  Chart.defaults.borderColor = getCSS('--border');
+  Chart.defaults.font.family = "'Inter',system-ui,sans-serif";
+  Chart.defaults.font.size = 11;
+}
+setupChartDefaults();
+
+function updateChartColors(){
+  setupChartDefaults();
+  Object.values(CI).forEach(c => { if(c && c.update) c.update() });
+}
+
+const MI = {
+  pass_rate:{l:'Pass Rate'},partial_credit:{l:'Partial Credit'},tool_efficiency:{l:'Tool Efficiency'},
+  cost_per_task:{l:'Cost/Task'},context_utilization:{l:'Context Usage'},avg_steps:{l:'Avg Steps'},
+  avg_duration:{l:'Duration'},error_recovery_rate:{l:'Error Recovery'},
 };
 
-const CARD_COLORS = ['green', 'cyan', 'amber', 'pink', '', '', '', ''];
+function fv(v,u){ return u==='$'?'$'+v.toFixed(2):u==='s'?v.toFixed(1):Number.isInteger(v)?v:v.toFixed(1) }
 
-const METRIC_ICONS = {
-  pass_rate: { label: 'Pass Rate', color: 'green' },
-  partial_credit: { label: 'Partial Credit', color: 'green' },
-  tool_efficiency: { label: 'Tool Efficiency', color: 'cyan' },
-  cost_per_task: { label: 'Cost / Task', color: 'amber' },
-  context_utilization: { label: 'Context Usage', color: 'pink' },
-  avg_steps: { label: 'Avg Steps', color: '' },
-  avg_duration: { label: 'Avg Duration', color: '' },
-  error_recovery_rate: { label: 'Error Recovery', color: 'green' },
-};
+function dx(id){ if(CI[id]){CI[id].destroy();delete CI[id]} }
 
-Chart.defaults.color = '#8b8d97';
-Chart.defaults.borderColor = 'rgba(42,45,58,0.6)';
-Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
-
-function loadData(data) {
+function loadData(d){
   document.getElementById('uploadZone').classList.add('hidden');
-  document.getElementById('dashboard').classList.remove('hidden');
+  document.getElementById('dash').classList.remove('hidden');
+  const {metrics,results}=d;
+  const P = [getCSS('--chart-1'),getCSS('--chart-2'),getCSS('--chart-3'),getCSS('--chart-4'),getCSS('--chart-5'),getCSS('--chart-6')];
 
-  const { metrics, results } = data;
-
-  // Header badge
-  const passed = results.filter(r => r.status === 'success').length;
-  const badge = document.getElementById('headerBadge');
-  if (passed === results.length) {
-    badge.innerHTML = `<span class="badge">${passed}/${results.length} PASSED</span>`;
-  } else {
-    badge.innerHTML = `<span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3)">${passed}/${results.length} PASSED</span>`;
-  }
-
-  // Metrics cards
-  const grid = document.getElementById('metricsGrid');
-  grid.innerHTML = '';
-  metrics.forEach((m, i) => {
-    const info = METRIC_ICONS[m.name] || { label: m.name, color: '' };
-    const card = document.createElement('div');
-    card.className = `metric-card ${info.color}`;
-    card.innerHTML = `
-      <div class="metric-label">${info.label}</div>
-      <div class="metric-value">${formatValue(m.value, m.unit)}<span class="metric-unit">${m.unit}</span></div>
-    `;
-    grid.appendChild(card);
+  // Metrics
+  const g=document.getElementById('mGrid');g.innerHTML='';
+  metrics.forEach(m=>{
+    const c=document.createElement('div');c.className='m-card';
+    c.innerHTML=`<div class="m-label">${(MI[m.name]||{l:m.name}).l}</div><div class="m-val">${fv(m.value,m.unit)}<span class="m-unit">${m.unit}</span></div>`;
+    g.appendChild(c);
   });
 
-  // Prepare task data
-  const taskIds = results.map(r => r.task_id.substring(0, 8));
-  const steps = results.map(r => r.trajectory.steps.length);
-  const inputTokens = results.map(r => r.trajectory.total_input_tokens);
-  const outputTokens = results.map(r => r.trajectory.total_output_tokens);
+  const ids=results.map(r=>r.task_id.substring(0,8));
+  const st=results.map(r=>r.trajectory.steps.length);
+  const it=results.map(r=>r.trajectory.total_input_tokens);
+  const ot=results.map(r=>r.trajectory.total_output_tokens);
 
-  // Steps chart
-  destroyChart('stepsChart');
-  chartInstances.stepsChart = new Chart(document.getElementById('stepsChart'), {
-    type: 'bar',
-    data: {
-      labels: taskIds,
-      datasets: [{
-        label: 'Steps',
-        data: steps,
-        backgroundColor: steps.map((_, i) => {
-          const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ec4899'];
-          return colors[i % colors.length] + '80';
-        }),
-        borderColor: steps.map((_, i) => {
-          const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ec4899'];
-          return colors[i % colors.length];
-        }),
-        borderWidth: 2,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } }
-      }
-    }
+  dx('cSteps');
+  CI.cSteps=new Chart(document.getElementById('cSteps'),{type:'bar',data:{labels:ids,datasets:[{data:st,backgroundColor:P.map(c=>c+'40'),borderColor:P,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}}}});
+
+  dx('cTokens');
+  CI.cTokens=new Chart(document.getElementById('cTokens'),{type:'bar',data:{labels:ids,datasets:[{label:'Input',data:it,backgroundColor:getCSS('--chart-1')+'40',borderColor:getCSS('--chart-1'),borderWidth:1.5,borderRadius:4},{label:'Output',data:ot,backgroundColor:getCSS('--chart-2')+'40',borderColor:getCSS('--chart-2'),borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:8,padding:12,font:{size:10}}}},scales:{y:{beginAtZero:true,stacked:true},x:{stacked:true,grid:{display:false}}}}});
+
+  const rm=metrics.filter(m=>m.unit==='%');
+  dx('cRadar');
+  CI.cRadar=new Chart(document.getElementById('cRadar'),{type:'radar',data:{labels:rm.map(m=>(MI[m.name]||{l:m.name}).l),datasets:[{data:rm.map(m=>m.value),backgroundColor:getCSS('--chart-1')+'18',borderColor:getCSS('--chart-1'),borderWidth:1.5,pointBackgroundColor:getCSS('--chart-1'),pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:25,backdropColor:'transparent',font:{size:9}},grid:{color:getCSS('--border')},angleLines:{color:getCSS('--border')},pointLabels:{font:{size:10}}}}}});
+
+  dx('cScatter');
+  CI.cScatter=new Chart(document.getElementById('cScatter'),{type:'scatter',data:{datasets:[{data:results.map(r=>({x:r.trajectory.total_input_tokens,y:r.trajectory.total_output_tokens})),backgroundColor:P,pointRadius:6,pointHoverRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ids[ctx.dataIndex]}: ${ctx.parsed.x} in / ${ctx.parsed.y} out`}}},scales:{x:{title:{display:true,text:'Input',font:{size:10}}},y:{title:{display:true,text:'Output',font:{size:10}},beginAtZero:true}}}});
+
+  // Table
+  const mx=Math.max(...it);
+  const tb=document.getElementById('tBody');tb.innerHTML='';
+  results.forEach(r=>{
+    const row=document.createElement('tr');
+    row.innerHTML=`<td style="font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11.5px">${r.task_id.substring(0,8)}</td><td><span class="badge ${r.status==='success'?'badge-g':'badge-r'}"><span class="badge-dot"></span>${r.status==='success'?'PASS':'FAIL'}</span></td><td>${r.tests_passed}/${r.tests_total}</td><td>${r.trajectory.steps.length}</td><td><div class="tok-bar"><div class="tok-fill" style="width:${(r.trajectory.total_input_tokens/mx)*70}px"></div><span class="tok-num">${r.trajectory.total_input_tokens.toLocaleString()}</span></div></td><td><div class="tok-bar"><div class="tok-fill" style="width:${(r.trajectory.total_output_tokens/mx)*70}px;background:var(--chart-2)"></div><span class="tok-num">${r.trajectory.total_output_tokens.toLocaleString()}</span></div></td>`;
+    tb.appendChild(row);
   });
 
-  // Tokens chart (stacked bar)
-  destroyChart('tokensChart');
-  chartInstances.tokensChart = new Chart(document.getElementById('tokensChart'), {
-    type: 'bar',
-    data: {
-      labels: taskIds,
-      datasets: [
-        {
-          label: 'Input Tokens',
-          data: inputTokens,
-          backgroundColor: '#6366f180',
-          borderColor: '#6366f1',
-          borderWidth: 2,
-          borderRadius: 6,
-        },
-        {
-          label: 'Output Tokens',
-          data: outputTokens,
-          backgroundColor: '#06b6d480',
-          borderColor: '#06b6d4',
-          borderWidth: 2,
-          borderRadius: 6,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } } },
-      scales: {
-        y: { beginAtZero: true, stacked: true },
-        x: { stacked: true, grid: { display: false } }
-      }
-    }
+  // Timeline
+  const sel=document.getElementById('tlSel');sel.innerHTML='';
+  results.forEach((r,i)=>{
+    const b=document.createElement('button');b.className=`tl-btn ${i===0?'on':''}`;b.textContent=r.task_id.substring(0,8);
+    b.onclick=()=>{sel.querySelectorAll('.tl-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderTL(r)};
+    sel.appendChild(b);
   });
-
-  // Radar chart
-  const radarMetrics = metrics.filter(m => m.unit === '%');
-  destroyChart('radarChart');
-  chartInstances.radarChart = new Chart(document.getElementById('radarChart'), {
-    type: 'radar',
-    data: {
-      labels: radarMetrics.map(m => (METRIC_ICONS[m.name] || {}).label || m.name),
-      datasets: [{
-        label: 'Score',
-        data: radarMetrics.map(m => m.value),
-        backgroundColor: 'rgba(99, 102, 241, 0.15)',
-        borderColor: '#6366f1',
-        borderWidth: 2,
-        pointBackgroundColor: '#6366f1',
-        pointBorderColor: '#fff',
-        pointRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          beginAtZero: true,
-          max: 100,
-          ticks: { stepSize: 25, backdropColor: 'transparent' },
-          grid: { color: 'rgba(42,45,58,0.6)' },
-          angleLines: { color: 'rgba(42,45,58,0.6)' },
-          pointLabels: { font: { size: 12 } }
-        }
-      }
-    }
-  });
-
-  // Scatter chart
-  destroyChart('scatterChart');
-  chartInstances.scatterChart = new Chart(document.getElementById('scatterChart'), {
-    type: 'scatter',
-    data: {
-      datasets: [{
-        label: 'Tasks',
-        data: results.map((r, i) => ({
-          x: r.trajectory.total_input_tokens,
-          y: r.trajectory.total_output_tokens,
-        })),
-        backgroundColor: results.map((_, i) => {
-          const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ec4899'];
-          return colors[i % colors.length];
-        }),
-        pointRadius: 8,
-        pointHoverRadius: 11,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `Task ${taskIds[ctx.dataIndex]}: ${ctx.parsed.x} in / ${ctx.parsed.y} out`
-          }
-        }
-      },
-      scales: {
-        x: { title: { display: true, text: 'Input Tokens' } },
-        y: { title: { display: true, text: 'Output Tokens' }, beginAtZero: true }
-      }
-    }
-  });
-
-  // Results table
-  const maxTokens = Math.max(...inputTokens);
-  const tbody = document.getElementById('resultsTable');
-  tbody.innerHTML = '';
-  results.forEach(r => {
-    const inTok = r.trajectory.total_input_tokens;
-    const outTok = r.trajectory.total_output_tokens;
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td style="font-family:monospace;font-weight:600">${r.task_id.substring(0, 8)}</td>
-      <td><span class="status-badge ${r.status === 'success' ? 'success' : 'failed'}"><span class="status-dot"></span>${r.status.toUpperCase()}</span></td>
-      <td>${r.tests_passed}/${r.tests_total}</td>
-      <td>${r.trajectory.steps.length}</td>
-      <td>
-        <div class="token-bar">
-          <div class="token-bar-fill" style="width:${(inTok/maxTokens)*100}px"></div>
-          <span class="token-bar-label">${inTok.toLocaleString()}</span>
-        </div>
-      </td>
-      <td>
-        <div class="token-bar">
-          <div class="token-bar-fill" style="width:${(outTok/maxTokens)*100}px;background:linear-gradient(90deg,#06b6d4,#22c55e)"></div>
-          <span class="token-bar-label">${outTok.toLocaleString()}</span>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-
-  // Task selector + timeline
-  const selector = document.getElementById('taskSelector');
-  selector.innerHTML = '';
-  results.forEach((r, i) => {
-    const btn = document.createElement('button');
-    btn.className = `task-btn ${i === 0 ? 'active' : ''}`;
-    btn.textContent = r.task_id.substring(0, 8);
-    btn.onclick = () => {
-      selector.querySelectorAll('.task-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderTimeline(r);
-    };
-    selector.appendChild(btn);
-  });
-
-  renderTimeline(results[0]);
+  renderTL(results[0]);
 }
 
-function renderTimeline(result) {
-  const list = document.getElementById('stepList');
-  list.innerHTML = '';
-  result.trajectory.steps.forEach(step => {
-    const li = document.createElement('li');
-    li.className = 'step-item';
-
-    const tools = step.tool_calls || [];
-    const toolChips = tools.map(tc =>
-      `<span class="tool-chip">${tc.tool_name}${tc.success ? '' : ' &#10060;'}</span>`
-    ).join('');
-
-    const reasoning = step.reasoning || '';
-    const reasoningPreview = reasoning.length > 0
-      ? reasoning.substring(0, 100).replace(/</g, '&lt;') + (reasoning.length > 100 ? '...' : '')
-      : '';
-
-    li.innerHTML = `
-      <div class="step-num">${step.step_number}</div>
-      <div class="step-content">
-        <div class="step-meta">
-          <strong>${step.step_type.toUpperCase()}</strong> &middot;
-          ${step.input_tokens.toLocaleString()} in / ${step.output_tokens.toLocaleString()} out
-        </div>
-        ${toolChips ? `<div class="step-tools">${toolChips}</div>` : ''}
-        ${reasoning ? `<div class="step-reasoning" id="reasoning-${result.task_id}-${step.step_number}">${reasoning.replace(/</g, '&lt;')}</div>` : ''}
-        ${reasoningPreview ? `<div style="font-size:12px;color:#8b8d97;margin-top:4px;cursor:pointer" onclick="toggleReasoning('${result.task_id}-${step.step_number}', event)">${reasoningPreview} <span style="color:#6366f1">[expand]</span></div>` : ''}
-      </div>
-    `;
-    list.appendChild(li);
+function renderTL(r){
+  const l=document.getElementById('tlList');l.innerHTML='';
+  r.trajectory.steps.forEach(s=>{
+    const li=document.createElement('li');li.className='tl-item';
+    const tc=(s.tool_calls||[]).map(t=>`<span class="tl-chip">${t.tool_name}${t.success?'':' ✗'}</span>`).join('');
+    const re=s.reasoning||'';
+    const pv=re.length>0?re.substring(0,90).replace(/</g,'&lt;')+(re.length>90?'...':''):'';
+    li.innerHTML=`<div class="tl-n">${s.step_number}</div><div class="tl-body"><div class="tl-meta"><strong>${s.step_type.toUpperCase()}</strong> &middot; ${s.input_tokens.toLocaleString()} in / ${s.output_tokens.toLocaleString()} out</div>${tc?`<div class="tl-tools">${tc}</div>`:''}${re?`<div class="tl-reason" id="re-${r.task_id}-${s.step_number}">${re.replace(/</g,'&lt;')}</div>`:''}${pv?`<div class="tl-exp" onclick="tgR('${r.task_id}-${s.step_number}',event)">${pv} <em>[show]</em></div>`:''}</div>`;
+    l.appendChild(li);
   });
 }
 
-function toggleReasoning(id, event) {
-  event.stopPropagation();
-  const el = document.getElementById('reasoning-' + id);
-  if (el) el.classList.toggle('open');
-}
+function tgR(id,e){e.stopPropagation();const el=document.getElementById('re-'+id);if(el)el.classList.toggle('open')}
 
-function formatValue(val, unit) {
-  if (unit === '$') return '$' + val.toFixed(2);
-  if (unit === 's') return val.toFixed(1);
-  if (Number.isInteger(val)) return val;
-  return val.toFixed(1);
-}
-
-function destroyChart(id) {
-  if (chartInstances[id]) {
-    chartInstances[id].destroy();
-    delete chartInstances[id];
-  }
-}
-
-// File input handling
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      loadData(data);
-    } catch (err) {
-      alert('Invalid JSON file: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
+// File handling
+document.getElementById('fileInput').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=ev=>{try{loadData(JSON.parse(ev.target.result))}catch(err){alert('Invalid JSON: '+err.message)}};r.readAsText(f);
 });
+const zone=document.getElementById('uploadZone');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.borderColor='var(--accent)'});
+zone.addEventListener('dragleave',()=>{zone.style.borderColor=''});
+zone.addEventListener('drop',e=>{e.preventDefault();zone.style.borderColor='';const f=e.dataTransfer.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{loadData(JSON.parse(ev.target.result))}catch(err){alert('Invalid JSON: '+err.message)}};r.readAsText(f)});
 
-// Drag and drop
-const zone = document.getElementById('uploadZone');
-zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.borderColor = '#6366f1'; });
-zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
-zone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  zone.style.borderColor = '';
-  const file = e.dataTransfer.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try { loadData(JSON.parse(ev.target.result)); }
-      catch (err) { alert('Invalid JSON: ' + err.message); }
-    };
-    reader.readAsText(file);
-  }
-});
-
-// Auto-load if results are embedded (for local use)
-// Try to fetch results file automatically
-fetch('results/default_results.json')
-  .then(r => r.ok ? r.json() : Promise.reject())
-  .then(data => loadData(data))
-  .catch(() => { /* show upload zone */ });
+fetch('results/default_results.json').then(r=>r.ok?r.json():Promise.reject()).then(d=>loadData(d)).catch(()=>{});
 </script>
 </body>
 </html>
